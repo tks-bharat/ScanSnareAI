@@ -50,6 +50,7 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
     return {
       status: 'success',
       data: result,
+      originalMessage: message,
     };
   } catch (error) {
     console.error(error);

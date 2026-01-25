@@ -52,6 +52,7 @@ export type ReportOutput = z.infer<typeof ReportOutputSchema>;
 export type AnalyzeState = {
   status: 'success';
   data: UIAgentOutput;
+  originalMessage: string;
 } | {
   status: 'error';
   message: string;

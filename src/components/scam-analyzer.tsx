@@ -27,7 +27,6 @@ export default function ScamAnalyzer() {
   const formRef = useRef<HTMLFormElement>(null);
   const [sessionId, setSessionId] = useState('');
   const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
 
   useEffect(() => {
     // Generate a unique session ID when the component mounts
@@ -43,11 +42,16 @@ export default function ScamAnalyzer() {
       });
     }
     if (state.status === 'success' && state.data) {
+        // Prevent adding duplicates if the effect runs multiple times.
+        if (conversationHistory.length > 0 && conversationHistory[conversationHistory.length - 1].text === state.data.agentResponse) {
+            return;
+        }
+
         setConversationHistory(prev => [
             ...prev,
             {
                 sender: 'scammer', // The message from the input is from the 'scammer'
-                text: currentMessage,
+                text: state.originalMessage,
                 timestamp: new Date().toISOString(),
             },
             {
@@ -56,10 +60,10 @@ export default function ScamAnalyzer() {
                 timestamp: new Date().toISOString(),
             }
         ]);
-        setCurrentMessage('');
         formRef.current?.reset();
     }
-  }, [state, toast, currentMessage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, toast]);
 
   const messageError = state.status === 'error' && state.errors?.find((e) => e.path === 'message')?.message;
 
@@ -80,7 +84,7 @@ export default function ScamAnalyzer() {
         </Card>
       )}
 
-      <form ref={formRef} action={formAction} className="space-y-4" onSubmit={() => setCurrentMessage(formRef.current?.message.value)}>
+      <form ref={formRef} action={formAction} className="space-y-4">
         <input type="hidden" name="conversationHistory" value={JSON.stringify(conversationHistory)} />
         <input type="hidden" name="sessionId" value={sessionId} />
         <div className="grid w-full gap-2">
