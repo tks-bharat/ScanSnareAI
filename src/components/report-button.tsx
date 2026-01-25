@@ -31,10 +31,10 @@ const initialState: ReportState = {
     status: 'initial'
 };
 
-export function ReportButton({ extractedData }: { extractedData: DetectScamIntentAndActivateAgentOutput }) {
+export function ReportButton({ extractedData, sessionId }: { extractedData: DetectScamIntentAndActivateAgentOutput, sessionId: string }) {
   const { toast } = useToast();
-  // Bind the extractedData to the server action
-  const reportWithData = reportToGuvi.bind(null, extractedData);
+  // Bind the extractedData and sessionId to the server action
+  const reportWithData = reportToGuvi.bind(null, extractedData, sessionId);
   const [state, formAction] = useActionState(reportWithData, initialState);
   
   useEffect(() => {

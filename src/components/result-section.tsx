@@ -48,7 +48,7 @@ function ResultItem({ icon, label, value }: ResultItemProps) {
   );
 }
 
-export function ResultSection({ data }: { data: DetectScamIntentAndActivateAgentOutput }) {
+export function ResultSection({ data, sessionId }: { data: DetectScamIntentAndActivateAgentOutput, sessionId: string }) {
   const { isScam, agentResponse, extractedIntelligence, engagementMetrics, agentNotes } = data;
 
   const intelligenceItems = [
@@ -150,7 +150,7 @@ export function ResultSection({ data }: { data: DetectScamIntentAndActivateAgent
       {isScam && (
         <div className="mt-8 text-center border-t pt-6">
             <p className="text-sm text-muted-foreground mb-4">Help improve scam detection by reporting this incident.</p>
-            <ReportButton extractedData={data} />
+            <ReportButton extractedData={data} sessionId={sessionId} />
         </div>
       )}
     </div>

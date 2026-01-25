@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useActionState } from 'react';
+import { useEffect, useRef, useActionState, useState } from 'react';
 import { analyzeMessage, type AnalyzeState } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,12 @@ export default function ScamAnalyzer() {
   const [state, formAction] = useActionState(analyzeMessage, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const [sessionId, setSessionId] = useState('');
+
+  useEffect(() => {
+    // Generate a unique session ID when the component mounts
+    setSessionId(crypto.randomUUID());
+  }, []);
 
   useEffect(() => {
     if (state.status === 'error' && state.message && !state.errors) {
@@ -58,7 +64,7 @@ export default function ScamAnalyzer() {
       </form>
 
       {state.status === 'success' && state.data && (
-        <ResultSection data={state.data} />
+        <ResultSection data={state.data} sessionId={sessionId} />
       )}
     </div>
   );

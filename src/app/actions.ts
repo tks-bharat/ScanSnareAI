@@ -66,6 +66,7 @@ export type ReportState = {
 
 export async function reportToGuvi(
   extractedData: DetectScamIntentAndActivateAgentOutput,
+  sessionId: string,
   prevState: ReportState, 
   formData: FormData
 ): Promise<ReportState> {
@@ -73,7 +74,8 @@ export async function reportToGuvi(
     isScam: extractedData.isScam,
     engagementMetrics: extractedData.engagementMetrics,
     extractedIntelligence: extractedData.extractedIntelligence,
-    agentNotes: extractedData.agentNotes
+    agentNotes: extractedData.agentNotes,
+    sessionId: sessionId,
   };
 
   try {
