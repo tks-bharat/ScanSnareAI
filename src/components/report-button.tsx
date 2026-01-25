@@ -1,13 +1,12 @@
-
 'use client'
 
-import { useFormStatus, useFormState } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Loader2, Send } from 'lucide-react';
 import { reportToGuvi, type ReportState } from '@/app/actions';
 import type { DetectScamIntentAndActivateAgentOutput } from '@/ai/flows/detect-scam-intent-and-activate-agent';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useActionState } from 'react';
 
 function ReportSubmitButton() {
   const { pending } = useFormStatus();
@@ -36,7 +35,7 @@ export function ReportButton({ extractedData }: { extractedData: DetectScamInten
   const { toast } = useToast();
   // Bind the extractedData to the server action
   const reportWithData = reportToGuvi.bind(null, extractedData);
-  const [state, formAction] = useFormState(reportWithData, initialState);
+  const [state, formAction] = useActionState(reportWithData, initialState);
   
   useEffect(() => {
     if (state.status === 'success') {

@@ -1,8 +1,6 @@
-
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFormState } from 'react-dom';
+import { useEffect, useRef, useActionState } from 'react';
 import { analyzeMessage, type AnalyzeState } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -15,7 +13,7 @@ const initialState: AnalyzeState = {
 };
 
 export default function ScamAnalyzer() {
-  const [state, formAction] = useFormState(analyzeMessage, initialState);
+  const [state, formAction] = useActionState(analyzeMessage, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 
