@@ -4,7 +4,7 @@ import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Loader2, Send } from 'lucide-react';
 import { reportToGuvi } from '@/app/actions';
-import type { UIAgentOutput } from '@/ai/flows/agent-flow';
+import type { UIAgentOutput } from '@/app/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useActionState } from 'react';
 import type { ReportState } from '@/app/lib/definitions';

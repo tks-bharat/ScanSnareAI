@@ -1,8 +1,8 @@
 'use server';
 
-import { agent, type UIAgentOutput } from '@/ai/flows/agent-flow';
+import { agent } from '@/ai/flows/agent-flow';
 import { z } from 'zod';
-import type { AnalyzeState, ReportState } from '@/app/lib/definitions';
+import type { AnalyzeState, ReportState, UIAgentOutput } from '@/app/lib/definitions';
 
 const analyzeSchema = z.object({
   message: z.string().min(1, { message: 'Message cannot be empty.' }),

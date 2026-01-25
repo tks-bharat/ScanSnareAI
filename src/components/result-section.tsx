@@ -1,5 +1,5 @@
 
-import type { UIAgentOutput } from '@/ai/flows/agent-flow';
+import type { UIAgentOutput } from '@/app/lib/definitions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
