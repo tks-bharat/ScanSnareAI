@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { AgentInputSchema, UIAgentOutputSchema, type AgentInput, type UIAgentOutput } from '@/app/lib/definitions';
+import { AgentInputSchema, AgentLLMOutputSchema, UIAgentOutputSchema, type AgentInput, type UIAgentOutput } from '@/app/lib/definitions';
 
 
 export async function agent(input: AgentInput): Promise<UIAgentOutput> {
@@ -17,7 +17,7 @@ export async function agent(input: AgentInput): Promise<UIAgentOutput> {
 const agentPrompt = ai.definePrompt({
   name: 'agentPrompt',
   input: { schema: AgentInputSchema },
-  output: { schema: UIAgentOutputSchema },
+  output: { schema: AgentLLMOutputSchema },
   prompt: `You are an AI-powered agentic honeypot designed to detect scam messages, handle multi-turn conversations, and extract scam intelligence without exposing detection.
 
 Your goal is to engage potential scammers in conversation to extract actionable intelligence. You must behave like a real, slightly naive human to maintain believability and encourage them to reveal more information.
@@ -27,7 +27,7 @@ Your goal is to engage potential scammers in conversation to extract actionable 
 2.  **Scam Detection**: Based on your analysis, determine if a scam attempt is in progress. Set the 'scamDetected' flag to true or false.
 3.  **Agentic Engagement**: If a scam is detected, activate your agent persona. Generate a natural, adaptive response as the 'user' to continue the conversation. Do NOT reveal that you are an AI or that you have detected a scam. If no scam is detected, you can provide a simple, non-engaging response like "Ok" or "Thanks".
 4.  **Intelligence Extraction**: From the entire conversation, extract any actionable intelligence like bank account numbers, UPI IDs, or phishing links.
-5.  **Metrics & Notes**: Calculate the engagement duration (approximated from timestamps) and total messages. Write concise notes about the scammer's tactics and your engagement strategy.
+5.  **Agent Notes**: Write concise notes about the scammer's tactics and your engagement strategy.
 
 **Conversation Context:**
 - Session ID: {{{sessionId}}}
@@ -44,7 +44,7 @@ Your goal is to engage potential scammers in conversation to extract actionable 
 - {{message.sender}}: "{{message.text}}" ({{message.timestamp}})
 
 **Output Format:**
-You must produce a single, valid JSON object that strictly conforms to the output schema.`,
+You must produce a single, valid JSON object that strictly conforms to the output schema. Do NOT include engagement metrics in your response.`,
 });
 
 const agentFlow = ai.defineFlow(
@@ -54,7 +54,30 @@ const agentFlow = ai.defineFlow(
     outputSchema: UIAgentOutputSchema,
   },
   async (input) => {
-    const { output } = await agentPrompt(input);
-    return output!;
+    const { output: llmOutput } = await agentPrompt(input);
+    if (!llmOutput) {
+        throw new Error("Agent prompt failed to return an output.");
+    }
+
+    // Calculate metrics in code for accuracy
+    const totalMessagesExchanged = input.conversationHistory.length + 1;
+    
+    let engagementDurationSeconds = 0;
+    if (input.conversationHistory.length > 0) {
+        const firstMessageTime = new Date(input.conversationHistory[0].timestamp).getTime();
+        const lastMessageTime = new Date(input.message.timestamp).getTime();
+        engagementDurationSeconds = Math.round(Math.abs(lastMessageTime - firstMessageTime) / 1000);
+    }
+
+    // Combine LLM output with calculated metrics
+    const finalOutput: UIAgentOutput = {
+        ...llmOutput,
+        engagementMetrics: {
+            totalMessagesExchanged,
+            engagementDurationSeconds,
+        },
+    };
+
+    return finalOutput;
   }
 );
