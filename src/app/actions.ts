@@ -1,30 +1,21 @@
-
 'use server';
 
-import { detectScamIntentAndActivateAgent, type DetectScamIntentAndActivateAgentOutput } from '@/ai/flows/detect-scam-intent-and-activate-agent';
+import { agent, type UIAgentOutput } from '@/ai/flows/agent-flow';
 import { z } from 'zod';
+import type { AnalyzeState, ReportState } from '@/app/lib/definitions';
 
-const schema = z.object({
-  message: z.string().min(10, { message: 'Message must be at least 10 characters long.' }),
+const analyzeSchema = z.object({
+  message: z.string().min(1, { message: 'Message cannot be empty.' }),
+  conversationHistory: z.string(), // JSON string
+  sessionId: z.string(),
 });
 
-export type AnalyzeState = {
-  status: 'success';
-  data: DetectScamIntentAndActivateAgentOutput;
-} | {
-  status: 'error';
-  message: string;
-  errors?: Array<{
-    path: string | number;
-    message: string;
-  }>;
-} | {
-    status: 'initial'
-};
 
 export async function analyzeMessage(prevState: AnalyzeState, formData: FormData): Promise<AnalyzeState> {
-  const validatedFields = schema.safeParse({
+  const validatedFields = analyzeSchema.safeParse({
     message: formData.get('message'),
+    conversationHistory: formData.get('conversationHistory'),
+    sessionId: formData.get('sessionId'),
   });
 
   if (!validatedFields.success) {
@@ -38,8 +29,24 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
     };
   }
 
+  const { message, sessionId } = validatedFields.data;
+  const conversationHistory = JSON.parse(validatedFields.data.conversationHistory);
+
   try {
-    const result = await detectScamIntentAndActivateAgent({ message: validatedFields.data.message });
+    const result = await agent({ 
+      sessionId,
+      message: {
+        sender: 'scammer',
+        text: message,
+        timestamp: new Date().toISOString()
+      },
+      conversationHistory,
+      metadata: {
+        channel: 'Chat',
+        language: 'English',
+        locale: 'IN'
+      }
+    });
     return {
       status: 'success',
       data: result,
@@ -53,25 +60,15 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
   }
 }
 
-
-export type ReportState = {
-  status: 'success',
-  message: string,
-} | {
-  status: 'error',
-  message: string,
-} | {
-  status: 'initial'
-};
-
 export async function reportToGuvi(
-  extractedData: DetectScamIntentAndActivateAgentOutput,
+  extractedData: UIAgentOutput,
   sessionId: string,
   prevState: ReportState, 
   formData: FormData
 ): Promise<ReportState> {
   const payload = {
-    isScam: extractedData.isScam,
+    status: 'success',
+    scamDetected: extractedData.scamDetected,
     engagementMetrics: extractedData.engagementMetrics,
     extractedIntelligence: extractedData.extractedIntelligence,
     agentNotes: extractedData.agentNotes,

@@ -1,5 +1,5 @@
 
-import type { DetectScamIntentAndActivateAgentOutput } from '@/ai/flows/detect-scam-intent-and-activate-agent';
+import type { UIAgentOutput } from '@/ai/flows/agent-flow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -10,11 +10,11 @@ import {
   Bot,
   Landmark,
   Link as LinkIcon,
-  Phone,
-  Hash,
+  Wallet,
   BarChart,
   ClipboardPenLine,
-  Wallet,
+  Clock,
+  MessagesSquare,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -25,37 +25,39 @@ type ResultItemProps = {
 };
 
 function ResultItem({ icon, label, value }: ResultItemProps) {
-  if (!value || (Array.isArray(value) && value.length === 0)) {
+  if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
     return null;
   }
+
+  const displayValue = typeof value === 'number' ? `${value}` : value;
 
   return (
     <div className="flex items-start gap-4">
       <div className="mt-1 text-muted-foreground">{icon}</div>
       <div className="flex-1">
         <p className="font-medium text-foreground">{label}</p>
-        {Array.isArray(value) ? (
+        {Array.isArray(displayValue) ? (
           <div className="flex flex-wrap gap-2 mt-1">
-            {value.map((item, index) => (
+            {displayValue.map((item, index) => (
               <Badge key={index} variant="secondary" className="font-normal text-sm">{item}</Badge>
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground break-words">{value}</p>
+          <p className="text-muted-foreground break-words">{displayValue}</p>
         )}
       </div>
     </div>
   );
 }
 
-export function ResultSection({ data, sessionId }: { data: DetectScamIntentAndActivateAgentOutput, sessionId: string }) {
-  const { isScam, agentResponse, extractedIntelligence, engagementMetrics, agentNotes } = data;
+export function ResultSection({ data, sessionId }: { data: UIAgentOutput, sessionId: string }) {
+  const { scamDetected, agentResponse, extractedIntelligence, engagementMetrics, agentNotes } = data;
 
   const intelligenceItems = [
     {
       icon: <Landmark className="h-5 w-5" />,
-      label: 'Bank Account Details',
-      value: extractedIntelligence.bankAccountDetails,
+      label: 'Bank Accounts',
+      value: extractedIntelligence.bankAccounts,
     },
     {
       icon: <Wallet className="h-5 w-5" />,
@@ -67,43 +69,35 @@ export function ResultSection({ data, sessionId }: { data: DetectScamIntentAndAc
       label: 'Phishing Links',
       value: extractedIntelligence.phishingLinks,
     },
-    {
-      icon: <Phone className="h-5 w-5" />,
-      label: 'Phone Numbers',
-      value: extractedIntelligence.phoneNumbers,
-    },
-    {
-      icon: <Hash className="h-5 w-5" />,
-      label: 'Suspicious Keywords',
-      value: extractedIntelligence.suspiciousKeywords,
-    },
   ];
 
   const hasIntelligence = intelligenceItems.some(item => item.value && (!Array.isArray(item.value) || item.value.length > 0));
 
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-500">
-      <Alert variant={isScam ? 'destructive' : 'default'} className="bg-card border-2">
-        {isScam ? <ShieldAlert className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5 text-green-600" />}
+      <Alert variant={scamDetected ? 'destructive' : 'default'} className="bg-card border-2">
+        {scamDetected ? <ShieldAlert className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5 text-green-600" />}
         <AlertTitle className="text-lg font-semibold">
-          {isScam ? 'Scam Intent Detected' : 'No Scam Intent Detected'}
+          {scamDetected ? 'Scam Intent Detected' : 'No Scam Intent Detected'}
         </AlertTitle>
         <AlertDescription>
-          {isScam ? 'The message shows strong indicators of a potential scam.' : 'The message appears to be safe.'}
+          {scamDetected ? 'The message shows strong indicators of a potential scam.' : 'The message appears to be safe.'}
         </AlertDescription>
       </Alert>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <Bot className="h-6 w-6 text-primary" />
-            <span>AI Agent Response</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-base italic">"{agentResponse}"</p>
-        </CardContent>
-      </Card>
+      {agentResponse && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <Bot className="h-6 w-6 text-primary" />
+              <span>AI Agent Response</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-base italic">"{agentResponse}"</p>
+          </CardContent>
+        </Card>
+      )}
       
       <div className="grid md:grid-cols-2 gap-6">
         <Card className='flex flex-col'>
@@ -131,7 +125,8 @@ export function ResultSection({ data, sessionId }: { data: DetectScamIntentAndAc
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <ResultItem icon={<ClipboardPenLine className="h-5 w-5" />} label="Conversation Turns" value={engagementMetrics.turns} />
+                    <ResultItem icon={<Clock className="h-5 w-5" />} label="Engagement Duration (s)" value={engagementMetrics.engagementDurationSeconds} />
+                    <ResultItem icon={<MessagesSquare className="h-5 w-5" />} label="Messages Exchanged" value={engagementMetrics.totalMessagesExchanged} />
                 </CardContent>
             </Card>
             <Card>
@@ -147,7 +142,7 @@ export function ResultSection({ data, sessionId }: { data: DetectScamIntentAndAc
             </Card>
         </div>
       </div>
-      {isScam && (
+      {scamDetected && (
         <div className="mt-8 text-center border-t pt-6">
             <p className="text-sm text-muted-foreground mb-4">Help improve scam detection by reporting this incident.</p>
             <ReportButton extractedData={data} sessionId={sessionId} />

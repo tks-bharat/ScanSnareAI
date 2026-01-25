@@ -3,10 +3,11 @@
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Loader2, Send } from 'lucide-react';
-import { reportToGuvi, type ReportState } from '@/app/actions';
-import type { DetectScamIntentAndActivateAgentOutput } from '@/ai/flows/detect-scam-intent-and-activate-agent';
+import { reportToGuvi } from '@/app/actions';
+import type { UIAgentOutput } from '@/ai/flows/agent-flow';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useActionState } from 'react';
+import type { ReportState } from '@/app/lib/definitions';
 
 function ReportSubmitButton() {
   const { pending } = useFormStatus();
@@ -31,7 +32,7 @@ const initialState: ReportState = {
     status: 'initial'
 };
 
-export function ReportButton({ extractedData, sessionId }: { extractedData: DetectScamIntentAndActivateAgentOutput, sessionId: string }) {
+export function ReportButton({ extractedData, sessionId }: { extractedData: UIAgentOutput, sessionId: string }) {
   const { toast } = useToast();
   // Bind the extractedData and sessionId to the server action
   const reportWithData = reportToGuvi.bind(null, extractedData, sessionId);
