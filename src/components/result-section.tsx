@@ -57,17 +57,17 @@ export function ResultSection({ data, sessionId }: { data: UIAgentOutput, sessio
     {
       icon: <Landmark className="h-5 w-5" />,
       label: 'Bank Accounts',
-      value: extractedIntelligence.bankAccounts,
+      value: extractedIntelligence?.bankAccounts,
     },
     {
       icon: <Wallet className="h-5 w-5" />,
       label: 'UPI IDs',
-      value: extractedIntelligence.upiIds,
+      value: extractedIntelligence?.upiIds,
     },
     {
       icon: <LinkIcon className="h-5 w-5" />,
       label: 'Phishing Links',
-      value: extractedIntelligence.phishingLinks,
+      value: extractedIntelligence?.phishingLinks,
     },
   ];
 
@@ -129,17 +129,19 @@ export function ResultSection({ data, sessionId }: { data: UIAgentOutput, sessio
                     <ResultItem icon={<MessagesSquare className="h-5 w-5" />} label="Messages Exchanged" value={engagementMetrics.totalMessagesExchanged} />
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-3">
-                    <ClipboardPenLine className="h-6 w-6 text-primary" />
-                    <span>Agent Notes</span>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">{agentNotes}</p>
-                </CardContent>
-            </Card>
+            {agentNotes && (
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-3">
+                      <ClipboardPenLine className="h-6 w-6 text-primary" />
+                      <span>Agent Notes</span>
+                      </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <p className="text-muted-foreground">{agentNotes}</p>
+                  </CardContent>
+              </Card>
+            )}
         </div>
       </div>
       {scamDetected && (

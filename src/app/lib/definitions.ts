@@ -28,11 +28,11 @@ export const UIAgentOutputSchema = z.object({
       totalMessagesExchanged: z.number().describe('Total number of messages exchanged.'),
     }),
     extractedIntelligence: z.object({
-      bankAccounts: z.array(z.string()).optional().describe('Bank accounts extracted from the conversation.'),
-      upiIds: z.array(z.string()).optional().describe('UPI IDs extracted from the conversation.'),
-      phishingLinks: z.array(z.string()).optional().describe('Phishing links extracted from the conversation.'),
-    }),
-    agentNotes: z.string().describe("Agent's notes about the conversation, including tactics used."),
+      bankAccounts: z.array(z.string()).optional().nullable().describe('Bank accounts extracted from the conversation.'),
+      upiIds: z.array(z.string()).optional().nullable().describe('UPI IDs extracted from the conversation.'),
+      phishingLinks: z.array(z.string()).optional().nullable().describe('Phishing links extracted from the conversation.'),
+    }).optional().nullable(),
+    agentNotes: z.string().optional().nullable().describe("Agent's notes about the conversation, including tactics used."),
     agentResponse: z.string().describe("The AI agent's response to continue the conversation."),
 });
 export type UIAgentOutput = z.infer<typeof UIAgentOutputSchema>;

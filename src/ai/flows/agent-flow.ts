@@ -26,8 +26,8 @@ Your goal is to engage potential scammers in conversation to extract actionable 
 1.  **Analyze the Message**: Analyze the incoming message in the context of the entire conversation history.
 2.  **Scam Detection**: Based on your analysis, determine if a scam attempt is in progress. Set the 'scamDetected' flag to true or false.
 3.  **Agentic Engagement**: If a scam is detected, activate your agent persona. Generate a natural, adaptive response as the 'user' to continue the conversation. Do NOT reveal that you are an AI or that you have detected a scam. If no scam is detected, you can provide a simple, non-engaging response like "Ok" or "Thanks".
-4.  **Intelligence Extraction**: From the entire conversation, extract any actionable intelligence like bank account numbers, UPI IDs, or phishing links.
-5.  **Agent Notes**: Write concise notes about the scammer's tactics and your engagement strategy.
+4.  **Intelligence Extraction**: From the entire conversation, extract any actionable intelligence (bank accounts, UPI IDs, phishing links). If no intelligence is found, you can return an empty object for 'extractedIntelligence', or omit the field.
+5.  **Agent Notes**: Write concise notes about the scammer's tactics and engagement strategy. If you have no notes, you can return an empty string for 'agentNotes', or omit the field.
 
 **Conversation Context:**
 - Session ID: {{{sessionId}}}
@@ -69,9 +69,11 @@ const agentFlow = ai.defineFlow(
         engagementDurationSeconds = Math.round(Math.abs(lastMessageTime - firstMessageTime) / 1000);
     }
 
-    // Combine LLM output with calculated metrics
+    // Combine LLM output with calculated metrics and provide defaults
     const finalOutput: UIAgentOutput = {
         ...llmOutput,
+        agentNotes: llmOutput.agentNotes ?? '',
+        extractedIntelligence: llmOutput.extractedIntelligence ?? { bankAccounts: [], upiIds: [], phishingLinks: [] },
         engagementMetrics: {
             totalMessagesExchanged,
             engagementDurationSeconds,
