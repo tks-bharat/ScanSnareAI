@@ -50,22 +50,7 @@ const detectScamIntentPrompt = ai.definePrompt({
 
   Based on the message, determine if it is likely a scam. If it is, generate an AI agent response to engage the scammer, extract any actionable intelligence, and provide engagement metrics and agent notes.
 
-  Output in the following JSON format:
-  {
-    "isScam": true/false,
-    "agentResponse": "AI agent response",
-    "extractedIntelligence": {
-      "bankAccountDetails": "Bank account details",
-      "upiIds": "UPI IDs",
-      "phishingLinks": "Phishing links",
-      "phoneNumbers": "Phone numbers",
-      "suspiciousKeywords": ["keyword1", "keyword2"]
-    },
-    "engagementMetrics": {
-      "turns": 0
-    },
-    "agentNotes": "Notes from the AI agent"
-  }`,
+  Output a JSON object that conforms to the output schema.`,
 });
 
 const detectScamIntentAndActivateAgentFlow = ai.defineFlow(

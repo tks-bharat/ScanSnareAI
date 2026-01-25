@@ -53,9 +53,7 @@ const adjustPersonaPrompt = ai.definePrompt({
 
   Provide an updated persona and a response that aligns with the updated persona. The response should be conversational and aimed at continuing the engagement with the scammer.
 
-  Output the updated persona and the AI agent response in a structured format.
-
-  {{zodFormat instruction=ManageAIDynamicPersonaOutputSchema}}
+  Output the updated persona and the AI agent response in a structured JSON format that conforms to the output schema.
   `,
 });
 

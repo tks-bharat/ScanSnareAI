@@ -61,7 +61,7 @@ const prompt = ai.definePrompt({
   - Phone numbers
   - Suspicious keywords
 
-  Return the extracted information in a structured JSON format.
+  Return the extracted information in a structured JSON format that conforms to the output schema.
 
   Conversation: {{{conversation}}}
 `,
