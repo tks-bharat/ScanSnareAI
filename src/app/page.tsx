@@ -1,5 +1,7 @@
+
 import ScamAnalyzer from '@/components/scam-analyzer';
 import { ShieldCheck } from 'lucide-react';
+import { Footer } from '@/components/footer';
 
 export default async function Home(props: { searchParams: Promise<{ sessionId?: string }> }) {
   const searchParams = await props.searchParams;
@@ -22,9 +24,7 @@ export default async function Home(props: { searchParams: Promise<{ sessionId?: 
 
         <ScamAnalyzer initialSessionId={initialSessionId} />
 
-        <footer className="mt-12 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Scam Snare AI. All rights reserved.</p>
-        </footer>
+        <Footer />
       </div>
     </main>
   );
