@@ -1,8 +1,10 @@
-
 import ScamAnalyzer from '@/components/scam-analyzer';
 import { ShieldCheck } from 'lucide-react';
 
-export default function Home() {
+export default async function Home(props: { searchParams: Promise<{ sessionId?: string }> }) {
+  const searchParams = await props.searchParams;
+  const initialSessionId = searchParams.sessionId;
+
   return (
     <main className="flex min-h-screen flex-col items-center p-4 sm:p-8 md:p-12">
       <div className="w-full max-w-4xl">
@@ -14,14 +16,14 @@ export default function Home() {
             </h1>
           </div>
           <p className="text-muted-foreground">
-            An AI-powered tool to detect scam attempts and extract intelligence. By Tan.
+            Sophisticated AI-powered scam detection inspired by Wisely.
           </p>
         </header>
 
-        <ScamAnalyzer />
+        <ScamAnalyzer initialSessionId={initialSessionId} />
 
         <footer className="mt-12 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Scam Snare AI. All rights reserved.</p>
+          <p>&copy; Scam Snare AI. All rights reserved.</p>
         </footer>
       </div>
     </main>

@@ -10,6 +10,7 @@ import { ResultSection } from './result-section';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
 import type { AnalyzeState } from '@/app/lib/definitions';
+import { Fingerprint } from 'lucide-react';
 
 const initialState: AnalyzeState = {
   status: 'initial',
@@ -21,17 +22,18 @@ type Message = {
   timestamp: string;
 };
 
-export default function ScamAnalyzer() {
+export default function ScamAnalyzer({ initialSessionId }: { initialSessionId?: string }) {
   const [state, formAction] = useActionState(analyzeMessage, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [sessionId, setSessionId] = useState('');
+  const [sessionId, setSessionId] = useState(initialSessionId || '');
   const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
 
   useEffect(() => {
-    // Generate a unique session ID when the component mounts
-    setSessionId(crypto.randomUUID());
-  }, []);
+    if (!sessionId) {
+      setSessionId(crypto.randomUUID());
+    }
+  }, [sessionId]);
 
   useEffect(() => {
     if (state.status === 'error' && state.message && !state.errors) {
@@ -50,12 +52,12 @@ export default function ScamAnalyzer() {
         setConversationHistory(prev => [
             ...prev,
             {
-                sender: 'scammer', // The message from the input is from the 'scammer'
+                sender: 'scammer',
                 text: state.originalMessage,
                 timestamp: new Date().toISOString(),
             },
             {
-                sender: 'user', // The agent's response is from the 'user' (our side)
+                sender: 'user',
                 text: state.data.agentResponse,
                 timestamp: new Date().toISOString(),
             }
@@ -69,13 +71,31 @@ export default function ScamAnalyzer() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg border border-border/50">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Fingerprint className="h-4 w-4" />
+          <span className="font-medium">Session ID:</span>
+          <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{sessionId}</code>
+        </div>
+        <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
+          Wisely Mode Active
+        </Badge>
+      </div>
+
       {conversationHistory.length > 0 && (
-        <Card>
+        <Card className="border-2 border-primary/10 shadow-lg">
             <CardContent className="pt-6 space-y-4 max-h-96 overflow-y-auto">
                 {conversationHistory.map((msg, index) => (
                     <div key={index} className={`flex flex-col ${msg.sender === 'user' ? 'items-start' : 'items-end'}`}>
-                        <Badge variant={msg.sender === 'user' ? 'default': 'secondary'} className='mb-1'>{msg.sender}</Badge>
-                        <div className={`rounded-lg p-3 text-base ${msg.sender === 'user' ? 'bg-primary/10' : 'bg-secondary'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <Badge variant={msg.sender === 'user' ? 'default': 'secondary'} className='text-[10px] h-4 px-1'>
+                            {msg.sender === 'user' ? 'Agent (You)' : 'Suspect'}
+                          </Badge>
+                        </div>
+                        <div className={`rounded-2xl px-4 py-2.5 text-sm max-w-[85%] ${msg.sender === 'user' ? 'bg-primary text-primary-foreground rounded-tl-none shadow-sm' : 'bg-secondary text-secondary-foreground rounded-tr-none border shadow-sm'}`}>
                             {msg.text}
                         </div>
                     </div>
@@ -88,12 +108,12 @@ export default function ScamAnalyzer() {
         <input type="hidden" name="conversationHistory" value={JSON.stringify(conversationHistory)} />
         <input type="hidden" name="sessionId" value={sessionId} />
         <div className="grid w-full gap-2">
-          <Label htmlFor="message">Enter message to analyze</Label>
+          <Label htmlFor="message" className="text-base font-semibold">Incoming Message Content</Label>
           <Textarea
             id="message"
             name="message"
-            placeholder="Paste the suspicious message here..."
-            className="min-h-[120px] text-base bg-card"
+            placeholder="Paste the suspicious message (SMS, WhatsApp, etc.) here for multi-dimensional analysis..."
+            className="min-h-[140px] text-base bg-card border-2 focus-visible:ring-primary transition-all shadow-inner"
             aria-describedby="message-error"
             aria-invalid={!!messageError}
           />

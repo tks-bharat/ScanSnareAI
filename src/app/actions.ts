@@ -52,11 +52,11 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
       data: result,
       originalMessage: message,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     return {
       status: 'error',
-      message: 'An unexpected error occurred while analyzing the message. Please try again.',
+      message: error.message || 'An unexpected error occurred while analyzing the message.',
     };
   }
 }
@@ -88,13 +88,13 @@ export async function reportToGuvi(
     if (!response.ok) {
         const errorBody = await response.text();
         console.error('Failed to report to GUVI:', response.status, errorBody);
-        return { status: 'error', message: `Server responded with ${response.status}. Check console for details.` };
+        return { status: 'error', message: `Server responded with ${response.status}.` };
     }
 
-    return { status: 'success', message: 'Successfully reported intelligence data.' };
+    return { status: 'success', message: 'Intelligence successfully reported to platform.' };
 
   } catch (error) {
     console.error('Network error while reporting to GUVI:', error);
-    return { status: 'error', message: 'A network error occurred. Could not send report.' };
+    return { status: 'error', message: 'A network error occurred while sending the report.' };
   }
 }
