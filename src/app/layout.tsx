@@ -1,4 +1,3 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { cn } from "@/lib/utils"
@@ -6,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: 'Scam Snare AI',
-  description: 'AI-powered scam detection and analysis by Tan',
+  description: 'Sophisticated AI-powered scam detection designed by Tan.',
 };
 
 export default function RootLayout({

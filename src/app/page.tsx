@@ -16,14 +16,14 @@ export default async function Home(props: { searchParams: Promise<{ sessionId?: 
             </h1>
           </div>
           <p className="text-muted-foreground">
-            Sophisticated AI-powered scam detection inspired by Wisely.
+            Sophisticated AI-powered scam detection designed by Tan.
           </p>
         </header>
 
         <ScamAnalyzer initialSessionId={initialSessionId} />
 
         <footer className="mt-12 text-center text-sm text-muted-foreground">
-          <p>&copy; Scam Snare AI. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Scam Snare AI. All rights reserved.</p>
         </footer>
       </div>
     </main>
