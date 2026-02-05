@@ -58,7 +58,7 @@ const agentFlow = ai.defineFlow(
       const { output: llmOutput } = await agentPrompt(input);
       
       if (!llmOutput) {
-        throw new Error("The AI agent failed to generate a valid analysis result.");
+        throw new Error("The AI agent failed to generate a valid analysis result. Please check the model availability.");
       }
 
       // Calculate engagement metrics
@@ -83,8 +83,10 @@ const agentFlow = ai.defineFlow(
         },
       };
     } catch (error: any) {
+      // Provide more specific error details
+      const errorDetail = error.message || "Unknown error";
       console.error("Agent Flow Error:", error);
-      throw new Error(`Analysis failed. Reason: ${error.message || "Unknown error"}`);
+      throw new Error(`Analysis failed. Reason: ${errorDetail}`);
     }
   }
 );
