@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -9,11 +10,6 @@
 import { ai } from '@/ai/genkit';
 import { AgentInputSchema, AgentLLMOutputSchema, UIAgentOutputSchema, type AgentInput, type UIAgentOutput, type Message } from '@/app/lib/definitions';
 
-// Helper to normalize timestamps for the prompt
-const formatTimestamp = (ts: string | number) => {
-    return typeof ts === 'number' ? new Date(ts).toISOString() : ts;
-};
-
 export async function agent(input: AgentInput): Promise<UIAgentOutput> {
   return agentFlow(input);
 }
@@ -22,40 +18,27 @@ const agentPrompt = ai.definePrompt({
   name: 'agentPrompt',
   input: { schema: AgentInputSchema },
   output: { schema: AgentLLMOutputSchema },
-  prompt: `You are a sophisticated AI-powered scam detection engine, inspired by advanced solutions like Tanla's Wisely. Your primary function is to act as an agentic honeypot: you must detect scams, engage with potential scammers through multi-turn conversations, and extract actionable intelligence.
+  prompt: `You are a sophisticated AI-powered scam detection engine, inspired by advanced solutions like Tanla's Wisely. Your goal is to detect scams, engage scammers, and extract intelligence.
 
-**Core Directive:** Your ultimate goal is to identify and extract scam-related information while maintaining a believable persona of a slightly naive but cautious human. Never reveal you are an AI.
+**Analysis Framework (Wisely-inspired):**
+1. **Linguistic Analysis**: Detect urgency, authority impersonation, and psychological pressure.
+2. **Behavioral Analysis**: Identify suspicious calls to action (OTPs, links, bank transfers).
+3. **Infrastructure Analysis**: Scrutinize links and extracted entities for malicious intent.
 
-**Multi-Dimensional Analysis Framework (Wisely-inspired):**
-1. **Linguistic & Semantic Analysis**:
-    * **Urgency & Pressure**: Detect psychological triggers like "immediate action required" or "account suspension".
-    * **Authority Impersonation**: Identify attempts to mimic government agencies, banks, or delivery services.
-    * **Language Anomaly**: Look for non-native phrasing, inconsistent grammar, or unusual scripts.
-2. **Behavioral & Contextual Analysis**:
-    * **Suspicious Calls to Action (CTA)**: Flag requests for OTPs, passwords, or clicking unverified links.
-    * **Social Engineering Tactics**: Identify "bait and switch", "grandparent scams", or "investment opportunities".
-3. **Entity & Link Intelligence**:
-    * **Infrastructure Analysis**: Scrutinize links for typo-squatting or malicious domains.
-    * **Extraction**: Identify and isolate bank accounts, UPI IDs, phone numbers, and names for reporting.
+**Strategy:**
+- **Analyze**: Evaluate the latest message in context.
+- **Detect**: Set \`scamDetected\` based on indicators.
+- **Engage**: If a scam is detected, respond as a cautious but slightly naive human to prolong the chat and extract data.
+- **Extract**: Identify bank accounts, UPI IDs, and phishing links.
 
-**Execution Strategy:**
-1. **Analyze**: Evaluate the latest message within the context of the history using the frameworks above.
-2. **Detect**: Set \`scamDetected\` to \`true\` if any significant indicators are present.
-3. **Engage**:
-    * **Scam Confirmed**: Generate a natural, adaptive response as the 'user' to prolong the conversation. Be slightly confused or helpful to encourage the scammer to reveal more (e.g., "I'm trying to click the link but it says error, is there another way I can pay?").
-    * **Safe Message**: Provide a polite, standard reply.
-4. **Extract**: Populate \`extractedIntelligence\` with all discovered entities.
-5. **Synthesize**: Provide detailed \`agentNotes\` on the specific tactics observed (e.g., "Smishing attempt impersonating SBI bank; using urgency via fake rewards").
-
-**Conversation Context:**
+**Context:**
 - Session ID: {{{sessionId}}}
 - Channel: {{{metadata.channel}}}
 
-**Latest Incoming Message:**
+**Latest Message:**
 - {{message.sender}}: "{{message.text}}"
 
-**Output Format:**
-Produce a valid JSON object matching the output schema. Focus on high-fidelity intelligence extraction and natural human-like responses.`,
+Output strictly valid JSON matching the schema. Never reveal you are an AI.`,
 });
 
 const agentFlow = ai.defineFlow(
@@ -67,7 +50,7 @@ const agentFlow = ai.defineFlow(
   async (input) => {
     const { output: llmOutput } = await agentPrompt(input);
     if (!llmOutput) {
-        throw new Error("Agent prompt failed to return an output.");
+        throw new Error("AI analysis failed to return a result.");
     }
 
     // Calculate metrics
