@@ -4,7 +4,11 @@ import { z } from 'zod';
 const MessageSchema = z.object({
   sender: z.enum(['scammer', 'user']),
   text: z.string(),
-  timestamp: z.string().datetime({ message: "Invalid ISO-8601 datetime format" }),
+  // Support both ISO strings and numeric timestamps (ms)
+  timestamp: z.union([
+    z.string().datetime({ message: "Invalid ISO-8601 datetime format" }),
+    z.number().describe('Unix timestamp in milliseconds')
+  ]),
 });
 export type Message = z.infer<typeof MessageSchema>;
 
@@ -16,7 +20,7 @@ export const AgentInputSchema = z.object({
     channel: z.enum(['SMS', 'WhatsApp', 'Email', 'Chat']),
     language: z.string(),
     locale: z.string(),
-  }).describe('Optional but recommended metadata.'),
+  }).describe('Contextual metadata about the message channel.'),
 });
 export type AgentInput = z.infer<typeof AgentInputSchema>;
 
@@ -28,11 +32,11 @@ export const UIAgentOutputSchema = z.object({
       totalMessagesExchanged: z.number().describe('Total number of messages exchanged.'),
     }),
     extractedIntelligence: z.object({
-      bankAccounts: z.array(z.string()).optional().nullable().describe('Bank accounts extracted from the conversation.'),
-      upiIds: z.array(z.string()).optional().nullable().describe('UPI IDs extracted from the conversation.'),
-      phishingLinks: z.array(z.string()).optional().nullable().describe('Phishing links extracted from the conversation.'),
+      bankAccounts: z.array(z.string()).optional().nullable().describe('Bank accounts extracted.'),
+      upiIds: z.array(z.string()).optional().nullable().describe('UPI IDs extracted.'),
+      phishingLinks: z.array(z.string()).optional().nullable().describe('Phishing links extracted.'),
     }).optional().nullable(),
-    agentNotes: z.string().optional().nullable().describe("Agent's notes about the conversation, including tactics used."),
+    agentNotes: z.string().optional().nullable().describe("Agent's analysis notes."),
     agentResponse: z.string().describe("The AI agent's response to continue the conversation."),
 });
 export type UIAgentOutput = z.infer<typeof UIAgentOutputSchema>;
@@ -41,12 +45,12 @@ export type UIAgentOutput = z.infer<typeof UIAgentOutputSchema>;
 export const AgentLLMOutputSchema = UIAgentOutputSchema.omit({ engagementMetrics: true });
 export type AgentLLMOutput = z.infer<typeof AgentLLMOutputSchema>;
 
-// This is the output expected by the GUVI API, which does NOT include the agentResponse.
-export const ReportOutputSchema = UIAgentOutputSchema.omit({ agentResponse: true }).extend({
+// API Specific Response Format
+export const APIResponseSchema = z.object({
     status: z.literal('success'),
+    reply: z.string().describe("The AI agent's response."),
 });
-export type ReportOutput = z.infer<typeof ReportOutputSchema>;
-
+export type APIResponse = z.infer<typeof APIResponseSchema>;
 
 // State types for UI actions
 export type AnalyzeState = {
