@@ -1,3 +1,4 @@
+
 'use server';
 
 import { agent } from '@/ai/flows/agent-flow';
@@ -10,7 +11,6 @@ const analyzeSchema = z.object({
   sessionId: z.string(),
 });
 
-
 export async function analyzeMessage(prevState: AnalyzeState, formData: FormData): Promise<AnalyzeState> {
   const validatedFields = analyzeSchema.safeParse({
     message: formData.get('message'),
@@ -21,7 +21,7 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
   if (!validatedFields.success) {
     return {
       status: 'error',
-      message: 'Invalid form data.',
+      message: 'Invalid input provided. Please ensure the message is not empty.',
       errors: validatedFields.error.issues.map((issue) => ({
         path: issue.path.join('.'),
         message: issue.message,
@@ -30,7 +30,13 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
   }
 
   const { message, sessionId } = validatedFields.data;
-  const conversationHistory = JSON.parse(validatedFields.data.conversationHistory) as Message[];
+  let conversationHistory: Message[] = [];
+  
+  try {
+    conversationHistory = JSON.parse(validatedFields.data.conversationHistory) as Message[];
+  } catch (e) {
+    console.error("Failed to parse conversation history:", e);
+  }
 
   try {
     const result = await agent({ 
@@ -47,16 +53,16 @@ export async function analyzeMessage(prevState: AnalyzeState, formData: FormData
         locale: 'IN'
       }
     });
+
     return {
       status: 'success',
       data: result,
       originalMessage: message,
     };
   } catch (error: any) {
-    console.error(error);
     return {
       status: 'error',
-      message: error.message || 'An unexpected error occurred while analyzing the message.',
+      message: error.message || 'An unexpected error occurred during analysis.',
     };
   }
 }
@@ -86,15 +92,12 @@ export async function reportToGuvi(
     });
 
     if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('Failed to report to GUVI:', response.status, errorBody);
-        return { status: 'error', message: `Server responded with ${response.status}.` };
+        return { status: 'error', message: `GUVI Platform responded with error: ${response.status}` };
     }
 
-    return { status: 'success', message: 'Intelligence successfully reported to platform.' };
+    return { status: 'success', message: 'Incident intelligence successfully reported to GUVI platform.' };
 
   } catch (error) {
-    console.error('Network error while reporting to GUVI:', error);
-    return { status: 'error', message: 'A network error occurred while sending the report.' };
+    return { status: 'error', message: 'Network error occurred while reporting to the platform.' };
   }
 }
